@@ -13,11 +13,13 @@ const hills = './images/hills.png'
 const background = './images/background.png'
 const platform = './images/platform.png'
 const platformSmallTall = './images/platformSmallTall.png'
-// const platformImg = createImage(platform)
-// const platformSmallTallImg = createImg(platformSmallTall)
-// const platformImg = createImage(platform)
 const platformWidth = 580
 const platformSmallTallWidth = 291
+
+const spriteStandRight = './images/spriteStandRight.png'
+const spriteStandLeft = './images/spriteStandLeft.png'
+const spriteRunRight = './images/spriteRunRight.png'
+const spriteRunLeft = './images/spriteRunLeft.png'
 
 
 class Player{
@@ -30,15 +32,39 @@ class Player{
 			x: 0,
 			y: -5
 		}
-		this.speed = 10
-		this.width = 30
-		this.height = 30
+		this.speed = 12
+		// this.image = createImage(spriteStandRight)
+		this.sprites = {
+			stand: {
+				right: createImage(spriteStandRight),
+				left: createImage(spriteStandLeft),
+				cropWidth: 177,
+				width: 66
+			},
+			run: {
+				right: createImage(spriteRunRight),
+				left: createImage(spriteRunLeft),
+				cropWidth: 341,
+				width: 127.875
+			}
+		}
+		this.frames = 0
+
+		this.currentSprite = this.sprites.stand.right
+		this.currCropWidth = this.sprites.stand.cropWidth
+		this.width = this.sprites.stand.width
+		this.height = 150
 	}
+
 
 	draw(){
 		c.beginPath()
-		c.fillStyle = 'red'
-		c.fillRect(
+		c.drawImage(
+			this.currentSprite,
+			this.currCropWidth * this.frames,
+			0,
+			this.currCropWidth,
+			400,
 			this.position.x,
 			this.position.y,
 			this.width,
@@ -46,6 +72,11 @@ class Player{
 		c.closePath()
 	}
 	update(){
+		this.frames++
+		if(this.frames >= 60 && 
+			(this.currentSprite === this.sprites.stand.right || this.currentSprite === this.sprites.stand.left)) this.frames = 0
+		else if(this.frames >= 30 &&
+			(this.currentSprite === this.sprites.run.right || this.currentSprite === this.sprites.run.left)) this.frames = 0
 		this.position.y += this.velocity.y
 		if(this.position.y + this.height + this.velocity.y < canvas.height)
 			this.velocity.y += gravity
@@ -185,7 +216,7 @@ function animate(){
 		platform.draw()
 	})
 	player.update()
-	// console.log(scrollOffset)
+	
 
 	requestAnimationFrame(animate)
 }
@@ -198,21 +229,38 @@ document.addEventListener('keydown', ({key}) => {
 	switch(key){
 	case 'a':
 		keys.isLeftPressed = true
+		player.currentSprite = player.sprites.run.left
 		break
 	case 'w':
 		if(Math.abs(player.velocity.y) <=  0.5)
 			player.velocity.y = -11
-		break
+		return
+		// break
 	case 'd':
 		keys.isRightPressed = true
+		player.currentSprite = player.sprites.run.right
+		break
+	default:
+		return
 	}
+
+	player.currCropWidth =  player.sprites.run.cropWidth
+	player.width = player.sprites.run.width
 })
 document.addEventListener('keyup', ({key}) => {
 	switch(key){
 	case 'a':
 		keys.isLeftPressed = false
+		player.currentSprite = player.sprites.stand.left
 		break
 	case 'd':
 		keys.isRightPressed = false
+		player.currentSprite = player.sprites.stand.right
+		break
+	default:
+		return
 	}
+
+	player.currCropWidth =  player.sprites.stand.cropWidth
+	player.width = player.sprites.stand.width
 })
